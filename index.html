@@ -1,0 +1,1910 @@
+```html
+<!-- ... existing code ... -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Arrow Escape</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* Exact pastel mint-cream radial palette matching the video */
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 42%, #eef9f2 0%, #e6f5ec 58%, #d7ecdf 100%);
+      color: #243734;
+      min-height: 100dvh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', 'Inter', sans-serif;
+    }
+
+    /* Vibrant outlined banner callout ("Awesome!", "Wonderful!", "WOW!") */
+    .banner-callout-text {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      paint-order: stroke fill;
+      -webkit-text-stroke: 5px #ffffff;
+      text-shadow: 0 4px 12px rgba(20, 60, 50, 0.16);
+    }
+
+    /* Mini floating "Eagle Eye!" callout */
+    .eagle-callout-text {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      color: #1698b5;
+      paint-order: stroke fill;
+      -webkit-text-stroke: 4px #ffffff;
+      text-shadow: 0 3px 8px rgba(15, 50, 45, 0.18);
+    }
+
+    @keyframes topBannerPop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(0.55);
+      }
+      18% {
+        opacity: 1;
+        transform: translate(-50%, -2px) scale(1.12);
+      }
+      32% {
+        transform: translate(-50%, 0px) scale(0.98);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -4px) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -18px) scale(0.92);
+      }
+    }
+
+    .animate-top-banner {
+      animation: topBannerPop 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes eagleFloat {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 6px) scale(0.7);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -6px) scale(1.06);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -18px) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -30px) scale(0.94);
+      }
+    }
+
+    .animate-eagle {
+      animation: eagleFloat 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes dropletShatter {
+      0% { transform: scale(1); opacity: 1; }
+      35% { transform: scale(1.28) rotate(-10deg); opacity: 0.95; }
+      100% { transform: scale(0.75) rotate(8deg); opacity: 0.24; filter: grayscale(0.85); }
+    }
+
+    .droplet-lost {
+      animation: dropletShatter 0.38s ease-out forwards;
+    }
+
+    .game-btn {
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+    }
+    .game-btn:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-between w-full h-[100dvh] px-3 py-2.5 sm:px-6 sm:py-4">
+  <!-- TOP HUD BAR (Exact match to video layout) -->
+  <header class="relative w-full max-w-[460px] flex items-start justify-between pt-0.5 z-20 shrink-0">
+    <!-- Left Column: 3 Teal Water-Droplet Lives + Combo Streak Pill below -->
+    <div class="flex flex-col items-start gap-2">
+      <!-- Three Teal Teardrop Lives -->
+      <div
+        id="dropletsContainer"
+        aria-label="Lives remaining"
+        class="flex items-center gap-2 pl-0.5"
+      ></div>
+
+      <!-- Secondary White Combo Streak Pill (Rocket/Dart + Counter) -->
+      <div
+        id="comboPill"
+        class="opacity-0 scale-90 pointer-events-none transition-all duration-200 flex items-center gap-1.5 bg-white/95 border border-emerald-900/10 rounded-xl px-2.5 py-1 shadow-[0_4px_12px_rgba(20,55,45,0.08)]"
+      >
+        <svg class="w-4 h-4 text-amber-500 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M13.5 2.2c2.9-.4 5.9.5 8 2.6 2.1 2.1 3 5.1 2.6 8-.3 2.1-1.3 4.1-2.8 5.6l-3.2 3.2c-.5.5-1.3.4-1.6-.2l-1.3-2.6-3.4-3.4-2.6-1.3c-.6-.3-.7-1.1-.2-1.6l3.2-3.2c1.5-1.5 3.5-2.5 5.3-2.8zM5.6 15.6l2.8 2.8-3.6 2.4c-.6.4-1.3-.3-.9-.9l1.7-4.3z"/>
+        </svg>
+        <span id="comboCountText" class="font-display font-bold text-sm text-slate-700 leading-none">
+          0
+        </span>
+      </div>
+    </div>
+
+    <!-- Center Celebratory Callout Overlay ("Awesome!", "Wonderful!", "WOW!") -->
+    <div
+      id="topCalloutAnchor"
+      class="absolute left-1/2 top-2 -translate-x-1/2 pointer-events-none w-64 h-14 flex items-center justify-center z-30"
+    ></div>
+
+    <!-- Right Column: Circular White Hint Lightbulb Button with Teal "AD" Badge -->
+    <button
+      id="hintBtn"
+      type="button"
+      aria-label="Hint"
+      title="Highlight a solvable arrow"
+      class="game-btn relative w-12 h-12 rounded-full bg-white/95 hover:bg-white border border-emerald-900/10 shadow-[0_6px_16px_rgba(20,55,45,0.1)] flex items-center justify-center cursor-pointer"
+    >
+      <!-- Lightbulb SVG -->
+      <svg class="w-6 h-6 text-[#243734]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+        <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
+        <path d="M12 2v1" />
+        <path d="M4.2 4.2l.7.7" />
+        <path d="M19.8 4.2l-.7.7" />
+      </svg>
+      <!-- Teal "AD" / Hint Pill Badge -->
+      <span class="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-[#2db5c7] text-white font-extrabold text-[9px] leading-none tracking-tight shadow-xs border border-white">
+        AD
+      </span>
+    </button>
+  </header>
+
+  <!-- MAIN INTERLOCKING ARROW PLAYFIELD -->
+  <main class="relative flex-1 w-full max-w-[460px] flex items-center justify-center min-h-0 my-1">
+    <div id="stageContainer" class="relative w-full h-full flex items-center justify-center">
+      <!-- Interactive High-DPI Canvas for Dotted Grid, Winding Arrows, Path Slithering, Trails & Confetti -->
+      <canvas
+        id="gameCanvas"
+        class="block w-full h-full cursor-pointer touch-none"
+      ></canvas>
+
+      <!-- Floating Mini Callout Layer ("Eagle Eye!") -->
+      <div
+        id="miniCalloutLayer"
+        class="absolute inset-0 pointer-events-none overflow-hidden z-20"
+      ></div>
+    </div>
+
+    <!-- Victory / Game Over Modal Overlay -->
+    <div
+      id="statusModal"
+      class="hidden absolute inset-0 rounded-3xl bg-[#182926]/45 backdrop-blur-xs flex items-center justify-center p-4 z-30"
+    >
+      <div class="bg-white/95 rounded-3xl max-w-[300px] w-full p-5 text-center shadow-2xl border border-emerald-900/10">
+        <div id="modalBadge" class="w-14 h-14 mx-auto mb-2.5 rounded-2xl bg-[#e6f5ec] flex items-center justify-center text-3xl">
+          🎉
+        </div>
+        <h2 id="modalTitle" class="font-display font-bold text-2xl text-[#243734] mb-1">
+          Maze Cleared!
+        </h2>
+        <p id="modalMessage" class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+          Every interlocking arrow escaped cleanly!
+        </p>
+        <div class="grid grid-cols-2 gap-2 bg-[#f2faf5] rounded-2xl p-2.5 mb-4 text-xs border border-emerald-900/5">
+          <div>
+            <div class="text-slate-400 font-bold text-[10px] uppercase">Best Streak</div>
+            <div id="modalStreak" class="font-display font-bold text-base text-[#243734]">0</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-bold text-[10px] uppercase">Droplets</div>
+            <div id="modalDroplets" class="font-display font-bold text-base text-[#2db5c7]">3 / 3</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button
+            id="modalRetryBtn"
+            type="button"
+            class="game-btn flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer"
+          >
+            Replay
+          </button>
+          <button
+            id="modalNextBtn"
+            type="button"
+            class="game-btn flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-[#2db5c7] hover:brightness-105 text-white shadow-sm cursor-pointer"
+          >
+            Next Maze
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SUBTLE BOTTOM LEVEL SWITCHER & CONTROLS BAR -->
+  <footer class="w-full max-w-[460px] flex items-center justify-between gap-2 bg-white/75 backdrop-blur-md border border-emerald-900/10 rounded-2xl px-3 py-2 shadow-xs z-20 shrink-0">
+    <!-- Level Selector + Procedural Generator -->
+    <div class="flex items-center gap-1.5 min-w-0">
+      <label for="levelSelect" class="sr-only">Choose Level</label>
+      <select
+        id="levelSelect"
+        aria-label="Choose Level"
+        class="bg-[#e6f5ec] hover:bg-[#d8efe2] text-[#243734] font-bold text-xs rounded-xl px-2.5 py-1.5 border border-emerald-900/10 cursor-pointer focus:outline-none truncate max-w-[170px] sm:max-w-[210px]"
+      ></select>
+      <span id="remainingBadge" class="text-[11px] font-bold text-emerald-800/75 whitespace-nowrap">
+        0 left
+      </span>
+    </div>
+
+    <!-- Action Controls: New Random Maze, Reset, Sound Toggle -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button
+        id="newProceduralBtn"
+        type="button"
+        title="Generate a fresh dense maze"
+        class="game-btn px-2.5 py-1.5 rounded-xl bg-amber-400/90 hover:bg-amber-400 text-amber-950 font-bold text-xs cursor-pointer"
+      >
+        + New
+      </button>
+
+      <button
+        id="resetBtn"
+        type="button"
+        aria-label="Reset Level"
+        title="Reset current level"
+        class="game-btn w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/90 flex items-center justify-center text-[#243734] font-bold text-sm cursor-pointer"
+      >
+        ↺
+      </button>
+
+      <button
+        id="soundBtn"
+        type="button"
+        aria-label="Toggle Sound"
+        title="Toggle Sound"
+        class="game-btn w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/90 flex items-center justify-center text-sm cursor-pointer"
+      >
+        <span id="soundIcon">🔊</span>
+      </button>
+
+      <button
+        id="settingsBtn"
+        type="button"
+        aria-label="Sound Settings"
+        title="Collision Sound Settings"
+        class="game-btn w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/90 flex items-center justify-center text-sm cursor-pointer"
+      >
+        <span>⚙️</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- SOUND SETTINGS MODAL (CUSTOM COLLISION SOUND UPLOAD & PRESETS) -->
+  <div
+    id="settingsModal"
+    class="hidden fixed inset-0 bg-[#182926]/45 backdrop-blur-xs flex items-center justify-center p-4 z-50"
+  >
+    <div class="bg-white/95 rounded-3xl max-w-[340px] w-full p-5 shadow-2xl border border-emerald-900/10 text-[#243734]">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-9 h-9 rounded-xl bg-[#e6f5ec] flex items-center justify-center text-lg">🔊</span>
+          <div>
+            <h2 class="font-display font-bold text-lg leading-tight">Sound Settings</h2>
+            <p class="text-[11px] text-slate-500 font-semibold">Arrow Collision (Takkar) Sound</p>
+          </div>
+        </div>
+        <button
+          id="closeSettingsBtn"
+          type="button"
+          aria-label="Close Settings"
+          class="game-btn w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Custom Audio File Upload Box -->
+      <div class="bg-[#f2faf5] border border-emerald-900/10 rounded-2xl p-3.5 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-[#243734]">Custom Sound File</span>
+          <span id="customSoundBadge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
+            Default
+          </span>
+        </div>
+
+        <p id="customSoundName" class="text-xs text-slate-600 truncate mb-2.5">
+          Built-in Soft Bonk
+        </p>
+
+        <input
+          id="collisionAudioInput"
+          type="file"
+          accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.webm"
+          class="sr-only"
+        />
+
+        <div class="flex gap-2">
+          <label
+            for="collisionAudioInput"
+            id="uploadSoundBtn"
+            role="button"
+            tabindex="0"
+            class="game-btn flex-1 py-2 px-3 rounded-xl bg-[#2db5c7] hover:brightness-105 text-white font-bold text-xs shadow-xs cursor-pointer flex items-center justify-center gap-1.5 select-none"
+          >
+            <span>📁</span>
+            <span>Choose Audio</span>
+          </label>
+
+          <button
+            id="testBonkBtn"
+            type="button"
+            class="game-btn py-2 px-3 rounded-xl bg-amber-400/90 hover:bg-amber-400 text-amber-950 font-bold text-xs cursor-pointer"
+          >
+            ▶ Test
+          </button>
+        </div>
+
+        <p id="uploadStatusMsg" class="hidden mt-2 text-[11px] font-bold text-emerald-700"></p>
+
+        <button
+          id="clearCustomSoundBtn"
+          type="button"
+          class="hidden mt-2 w-full py-1.5 px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[11px] border border-rose-200/80 cursor-pointer"
+        >
+          🗑 Remove Custom Sound & Use Built-in
+        </button>
+      </div>
+
+      <!-- Built-in Collision Sound Presets (when no custom file is active) -->
+      <div class="mb-4">
+        <label for="bonkPresetSelect" class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">
+          Built-in Collision Presets
+        </label>
+        <select
+          id="bonkPresetSelect"
+          class="w-full bg-slate-50 hover:bg-slate-100 text-[#243734] font-bold text-xs rounded-xl px-3 py-2 border border-slate-200 cursor-pointer focus:outline-none"
+        >
+          <option value="softBonk">Soft Bonk (Default)</option>
+          <option value="woodKnock">Wood Knock</option>
+          <option value="arcadeThud">Arcade Thud</option>
+          <option value="glassTap">Crisp Glass Tap</option>
+        </select>
+      </div>
+
+      <button
+        id="saveSettingsBtn"
+        type="button"
+        class="game-btn w-full py-2.5 rounded-xl bg-[#243734] hover:opacity-95 text-white font-bold text-xs sm:text-sm cursor-pointer"
+      >
+        Done
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Arrow Escape / Arrow Out - Authentic Mobile Puzzle Recreation
+     *
+     * Core Design & Algorithms:
+     * 1. Reverse-peeling solvability guarantee:
+     *    Every puzzle (both handcrafted dense mazes and procedural mazes) is constructed or verified
+     *    so that there is always a valid sequence of unobstructed straight-ray exits from the arrowhead
+     *    to the outer border of the grid.
+     * 2. Dense 18x26 interlocking labyrinth layout:
+     *    Arrows are polylines of unit grid steps with crisp 90-degree bends and a directional head
+     *    ('UP', 'DOWN', 'LEFT', 'RIGHT'). Default color is dark slate charcoal (#243734), with
+     *    occasional golden-amber (#f4a62a) accent arrows mixed in.
+     * 3. True snake-like path-following slither animation:
+     *    When a clear arrow is tapped, it turns a vibrant escape color (cyan-blue, coral-red,
+     *    lime-green, purple, or golden-orange) and advances continuously by arc-length `s` along
+     *    its own bend polyline extended straight off the canvas—so every kink travels cleanly around
+     *    each corner until the tail exits the viewport!
+     * 4. Fading colored trail dots & confetti:
+     *    As the escaping arrow's tail vacates each grid cell, it leaves behind a glowing colored dot
+     *    that fades smoothly over time, accompanied by crisp geometric confetti particles.
+     */
+
+    // =========================================================================
+    // 1. CORE CONSTANTS, DIRECTIONS, PALETTE & CALLOUTS
+    // =========================================================================
+    const COLORS = {
+      gridDot: '#b9cfc3',
+      charcoal: '#243734',
+      amberAccent: '#f4a62a',
+      errorRed: '#ef4444',
+      escapePalette: [
+        '#239bf2', // Sky Blue
+        '#e84c5c', // Coral Red
+        '#7bc142', // Lime Green
+        '#9b51e0', // Royal Purple
+        '#f59e23', // Golden Orange
+        '#14b8a6'  // Teal
+      ]
+    };
+
+    const DIRS = {
+      UP: { dr: -1, dc: 0, angle: -Math.PI / 2 },
+      DOWN: { dr: 1, dc: 0, angle: Math.PI / 2 },
+      LEFT: { dr: 0, dc: -1, angle: Math.PI },
+      RIGHT: { dr: 0, dc: 1, angle: 0 }
+    };
+
+    const TOP_CALLOUTS = [
+      { text: 'Good call!', gradient: 'linear-gradient(180deg, #4cd964 0%, #24a846 100%)' },
+      { text: 'Awesome!', gradient: 'linear-gradient(180deg, #3ac8f8 0%, #1687d9 100%)' },
+      { text: 'Wonderful!', gradient: 'linear-gradient(180deg, #a875ff 0%, #6f35e8 100%)' },
+      { text: 'WOW!', gradient: 'linear-gradient(180deg, #ffbe3b 0%, #f06722 100%)' }
+    ];
+
+    // =========================================================================
+    // 2. PROCEDURAL + CUSTOM COLLISION SOUND ENGINE
+    // =========================================================================
+    class SoundEffects {
+      constructor() {
+        this.enabled = true;
+        this.ctx = null;
+        this.bonkPreset = 'softBonk';
+        this.customBonkDataUrl = null;
+        this.customObjectUrl = null;
+        this.customBonkName = '';
+        this.customAudioElement = null;
+        this.customAudioBuffer = null;
+
+        try {
+          const savedPreset = localStorage.getItem('arrowEscape_bonkPreset');
+          const savedDataUrl = localStorage.getItem('arrowEscape_customBonkUrl');
+          const savedName = localStorage.getItem('arrowEscape_customBonkName');
+          if (savedPreset) this.bonkPreset = savedPreset;
+          if (savedDataUrl) {
+            this.setCustomBonkSound(savedDataUrl, savedName || 'Custom Audio', false);
+          }
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      setBonkPreset(preset) {
+        this.bonkPreset = preset;
+        try {
+          localStorage.setItem('arrowEscape_bonkPreset', preset);
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      async decodeCustomBuffer(sourceUrl) {
+        try {
+          const ctx = this.unlock(true);
+          if (!ctx) return;
+          const res = await fetch(sourceUrl);
+          const arrayBuf = await res.arrayBuffer();
+          this.customAudioBuffer = await ctx.decodeAudioData(arrayBuf);
+        } catch {
+          this.customAudioBuffer = null;
+        }
+      }
+
+      async setCustomBonkFile(file) {
+        if (!file) return false;
+        this.customBonkName = file.name || 'Custom Audio';
+
+        // Revoke previous object URL if any
+        if (this.customObjectUrl) {
+          try { URL.revokeObjectURL(this.customObjectUrl); } catch {}
+        }
+
+        // Instant Blob URL playback (works even for large files and inside iframes)
+        const objectUrl = URL.createObjectURL(file);
+        this.customObjectUrl = objectUrl;
+        this.customBonkDataUrl = objectUrl;
+        this.customAudioElement = new Audio(objectUrl);
+        this.customAudioElement.preload = 'auto';
+
+        // Decode directly from file.arrayBuffer() for zero-latency Web Audio playback
+        try {
+          const ctx = this.unlock(true);
+          if (ctx) {
+            const rawBuf = await file.arrayBuffer();
+            this.customAudioBuffer = await ctx.decodeAudioData(rawBuf.slice(0));
+          }
+        } catch {
+          this.customAudioBuffer = null;
+        }
+
+        // Also try persisting smaller files (< 3.5MB) in localStorage across reloads
+        if (file.size <= 3.5 * 1024 * 1024) {
+          try {
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (typeof reader.result === 'string') {
+                try {
+                  localStorage.setItem('arrowEscape_customBonkUrl', reader.result);
+                  localStorage.setItem('arrowEscape_customBonkName', this.customBonkName);
+                } catch {}
+              }
+            };
+            reader.readAsDataURL(file);
+          } catch {}
+        }
+
+        return true;
+      }
+
+      setCustomBonkSound(dataUrl, fileName, persist = true) {
+        this.customBonkDataUrl = dataUrl;
+        this.customBonkName = fileName || 'Custom Audio';
+        this.customAudioElement = new Audio(dataUrl);
+        this.customAudioElement.preload = 'auto';
+        this.decodeCustomBuffer(dataUrl);
+
+        if (persist) {
+          try {
+            localStorage.setItem('arrowEscape_customBonkUrl', dataUrl);
+            localStorage.setItem('arrowEscape_customBonkName', this.customBonkName);
+          } catch {
+            // File may exceed localStorage quota; still works for the active session
+          }
+        }
+      }
+
+      clearCustomBonkSound() {
+        if (this.customObjectUrl) {
+          try { URL.revokeObjectURL(this.customObjectUrl); } catch {}
+          this.customObjectUrl = null;
+        }
+        this.customBonkDataUrl = null;
+        this.customBonkName = '';
+        this.customAudioElement = null;
+        this.customAudioBuffer = null;
+        try {
+          localStorage.removeItem('arrowEscape_customBonkUrl');
+          localStorage.removeItem('arrowEscape_customBonkName');
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      unlock(forceCreate = false) {
+        if (!this.enabled && !forceCreate) return null;
+        try {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+          if (this.customBonkDataUrl && !this.customAudioBuffer && this.ctx) {
+            this.decodeCustomBuffer(this.customBonkDataUrl);
+          }
+          return this.ctx;
+        } catch {
+          return null;
+        }
+      }
+
+      playSlitherEscape(streak = 1) {
+        const ctx = this.unlock();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+
+          // Crisp wooden/pop tap
+          const pop = ctx.createOscillator();
+          const popGain = ctx.createGain();
+          const pitch = Math.min(440 + streak * 38, 880);
+          pop.type = 'sine';
+          pop.frequency.setValueAtTime(pitch * 0.72, now);
+          pop.frequency.exponentialRampToValueAtTime(pitch * 1.38, now + 0.075);
+
+          popGain.gain.setValueAtTime(0.001, now);
+          popGain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+          popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+          pop.connect(popGain);
+          popGain.connect(ctx.destination);
+          pop.start(now);
+          pop.stop(now + 0.1);
+
+          // Smooth slither whoosh + harmonic chime
+          const whoosh = ctx.createOscillator();
+          const whooshGain = ctx.createGain();
+          whoosh.type = 'triangle';
+          whoosh.frequency.setValueAtTime(280, now + 0.02);
+          whoosh.frequency.exponentialRampToValueAtTime(740, now + 0.28);
+
+          whooshGain.gain.setValueAtTime(0.001, now + 0.02);
+          whooshGain.gain.linearRampToValueAtTime(0.09, now + 0.07);
+          whooshGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+          whoosh.connect(whooshGain);
+          whooshGain.connect(ctx.destination);
+          whoosh.start(now + 0.02);
+          whoosh.stop(now + 0.31);
+        } catch {
+          // Safe fallback
+        }
+      }
+
+      playBonk() {
+        if (!this.enabled) return;
+
+        // 1. Play user's uploaded custom collision audio if configured
+        if (this.customBonkDataUrl) {
+          const ctx = this.unlock();
+          if (ctx && this.customAudioBuffer) {
+            try {
+              const src = ctx.createBufferSource();
+              src.buffer = this.customAudioBuffer;
+              src.connect(ctx.destination);
+              src.start(0);
+              return;
+            } catch {
+              // Fall through to HTMLAudio fallback
+            }
+          }
+
+          try {
+            if (this.customAudioElement) {
+              this.customAudioElement.pause();
+              this.customAudioElement.currentTime = 0;
+              this.customAudioElement.volume = 1.0;
+              this.customAudioElement.play().catch(() => {
+                this.playSynthBonk();
+              });
+              return;
+            }
+          } catch {
+            // Fall through to synthesized preset
+          }
+        }
+
+        // 2. Otherwise play selected built-in Web Audio preset
+        this.playSynthBonk();
+      }
+
+      playSynthBonk() {
+        const ctx = this.unlock();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          if (this.bonkPreset === 'woodKnock') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(340, now);
+            osc.frequency.exponentialRampToValueAtTime(125, now + 0.085);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.28, now + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.1);
+          } else if (this.bonkPreset === 'arcadeThud') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(145, now);
+            osc.frequency.exponentialRampToValueAtTime(42, now + 0.22);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.2, now + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          } else if (this.bonkPreset === 'glassTap') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(920, now);
+            osc.frequency.exponentialRampToValueAtTime(510, now + 0.07);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.2, now + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.09);
+          } else {
+            // Default: Soft Bonk
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(165, now);
+            osc.frequency.exponentialRampToValueAtTime(62, now + 0.17);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.22, now + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.2);
+          }
+        } catch {
+          // Safe fallback
+        }
+      }
+
+      playVictory() {
+        const ctx = this.unlock();
+        if (!ctx) return;
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+          const now = ctx.currentTime;
+          notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const t = now + i * 0.075;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, t);
+
+            gain.gain.setValueAtTime(0.001, t);
+            gain.gain.linearRampToValueAtTime(0.14, t + 0.018);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.34);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.36);
+          });
+        } catch {
+          // Safe fallback
+        }
+      }
+    }
+
+    // =========================================================================
+    // 3. SOLVABLE MAZE GENERATOR (REVERSE-PEELING INTERLOCKING LABYRINTH)
+    // =========================================================================
+    /**
+     * Generates a dense, interlocking snake-arrow puzzle on a `rows x cols` grid
+     * that is 100% guaranteed solvable.
+     *
+     * How Reverse-Peeling works:
+     * - We maintain `occupied` cells on the board.
+     * - To place a new arrow that will be solvable AFTER all previously placed arrows
+     *   have exited:
+     *   1. Pick an empty cell for the arrowhead and a direction (`UP`, `DOWN`, `LEFT`, `RIGHT`).
+     *   2. Verify the straight ray from that arrowhead to the grid boundary contains NO
+     *      currently occupied cells! (Because previously placed arrows are already placed on
+     *      the board, any ray avoiding them is guaranteed clear once later-placed arrows peel away.)
+     *   3. Grow a winding snake body backwards from the arrowhead through adjacent empty cells
+     *      with frequent 90-degree turns so arrows interlock tightly like a labyrinth!
+     */
+    function generateSolvableMaze({ rows = 24, cols = 17, seed = 1, amberRatio = 0.14, targetFill = 0.84 }) {
+      // Deterministic PRNG for reproducible handcrafted levels
+      let s = (seed * 9301 + 49297) % 233280;
+      const rand = () => {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      };
+
+      const shuffle = (arr) => {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      };
+
+      const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+      const arrows = [];
+      const dirKeys = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+
+      const isRayClearToEdge = (headR, headC, dirKey) => {
+        const { dr, dc } = DIRS[dirKey];
+        let r = headR + dr;
+        let c = headC + dc;
+        while (r >= 0 && r < rows && c >= 0 && c < cols) {
+          if (grid[r][c] !== null) return false;
+          r += dr;
+          c += dc;
+        }
+        return true;
+      };
+
+      const totalCells = rows * cols;
+      let filledCells = 0;
+      let attempts = 0;
+      const maxAttempts = totalCells * 18;
+
+      while (filledCells / totalCells < targetFill && attempts < maxAttempts) {
+        attempts++;
+
+        // Collect all empty candidate head cells
+        const candidates = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === null) {
+              candidates.push([r, c]);
+            }
+          }
+        }
+        if (candidates.length === 0) break;
+
+        const [headR, headC] = candidates[Math.floor(rand() * candidates.length)];
+        const shuffledDirs = shuffle(dirKeys);
+        let chosenDir = null;
+
+        for (const d of shuffledDirs) {
+          // Ensure at least 1 step behind head exists to form a valid >=2-cell arrow
+          const backR = headR - DIRS[d].dr;
+          const backC = headC - DIRS[d].dc;
+          if (
+            backR >= 0 &&
+            backR < rows &&
+            backC >= 0 &&
+            backC < cols &&
+            grid[backR][backC] === null &&
+            isRayClearToEdge(headR, headC, d)
+          ) {
+            chosenDir = d;
+            break;
+          }
+        }
+
+        if (!chosenDir) continue;
+
+        // Grow snake body backwards from head -> neck -> ... -> tail
+        const neckR = headR - DIRS[chosenDir].dr;
+        const neckC = headC - DIRS[chosenDir].dc;
+        const revPath = [
+          [headR, headC],
+          [neckR, neckC]
+        ];
+        const tempSet = new Set([`${headR},${headC}`, `${neckR},${neckC}`]);
+
+        // Vary arrow lengths between short darts (3-5) and long winding snakes (7-18)
+        const desiredLen =
+          rand() < 0.35
+            ? 3 + Math.floor(rand() * 4)
+            : 7 + Math.floor(rand() * 12);
+
+        let prevDr = neckR - headR;
+        let prevDc = neckC - headC;
+
+        while (revPath.length < desiredLen) {
+          const [currR, currC] = revPath[revPath.length - 1];
+          const neighbors = [];
+
+          for (const d of dirKeys) {
+            const nr = currR + DIRS[d].dr;
+            const nc = currC + DIRS[d].dc;
+            if (
+              nr >= 0 &&
+              nr < rows &&
+              nc >= 0 &&
+              nc < cols &&
+              grid[nr][nc] === null &&
+              !tempSet.has(`${nr},${nc}`)
+            ) {
+              // Favor 90-degree bends (55%) and straight corridors (45%) for authentic labyrinth look
+              const isStraight = DIRS[d].dr === prevDr && DIRS[d].dc === prevDc;
+              const weight = isStraight ? 1.1 : 1.45;
+              neighbors.push({ nr, nc, dr: DIRS[d].dr, dc: DIRS[d].dc, weight });
+            }
+          }
+
+          if (neighbors.length === 0) break;
+
+          const totalW = neighbors.reduce((acc, n) => acc + n.weight, 0);
+          let pick = rand() * totalW;
+          let chosen = neighbors[0];
+          for (const n of neighbors) {
+            pick -= n.weight;
+            if (pick <= 0) {
+              chosen = n;
+              break;
+            }
+          }
+
+          revPath.push([chosen.nr, chosen.nc]);
+          tempSet.add(`${chosen.nr},${chosen.nc}`);
+          prevDr = chosen.dr;
+          prevDc = chosen.dc;
+        }
+
+        // Reverse so path[0] is tail and path[path.length - 1] is arrowhead
+        const path = revPath.reverse();
+        const id = `arrow-${seed}-${arrows.length}`;
+        for (const [r, c] of path) {
+          grid[r][c] = id;
+        }
+        filledCells += path.length;
+
+        const isAmber = rand() < amberRatio;
+        arrows.push({
+          id,
+          dir: chosenDir,
+          path,
+          baseColor: isAmber ? COLORS.amberAccent : COLORS.charcoal
+        });
+      }
+
+      // Final pruning safety pass: guarantee 100% solvability by verifying full peel order
+      const remaining = arrows.slice();
+      const peelableSet = new Set();
+      let progress = true;
+      while (progress && remaining.length > 0) {
+        progress = false;
+        const occ = new Set();
+        for (const a of remaining) {
+          for (const [r, c] of a.path) occ.add(`${r},${c}`);
+        }
+        for (let i = remaining.length - 1; i >= 0; i--) {
+          const a = remaining[i];
+          const [hr, hc] = a.path[a.path.length - 1];
+          const { dr, dc } = DIRS[a.dir];
+          let r = hr + dr;
+          let c = hc + dc;
+          let blocked = false;
+          while (r >= 0 && r < rows && c >= 0 && c < cols) {
+            if (occ.has(`${r},${c}`)) {
+              blocked = true;
+              break;
+            }
+            r += dr;
+            c += dc;
+          }
+          if (!blocked) {
+            peelableSet.add(a.id);
+            remaining.splice(i, 1);
+            progress = true;
+          }
+        }
+      }
+
+      return {
+        rows,
+        cols,
+        arrows: arrows.filter((a) => peelableSet.has(a.id))
+      };
+    }
+
+    // Pre-built curated levels including the dense 18x26 interlocking maze from the video
+    const PRESET_LEVELS = [
+      { name: 'Level 1 • Video Dense Maze', rows: 25, cols: 17, seed: 42, amberRatio: 0.14, targetFill: 0.86 },
+      { name: 'Level 2 • Labyrinth Twist', rows: 22, cols: 15, seed: 108, amberRatio: 0.16, targetFill: 0.84 },
+      { name: 'Level 3 • Grand Escape', rows: 26, cols: 18, seed: 314, amberRatio: 0.15, targetFill: 0.87 }
+    ];
+
+    // =========================================================================
+    // 4. POLYLINE GEOMETRY & PATH-FOLLOWING SLITHER UTILITIES
+    // =========================================================================
+    /**
+     * Converts a sequence of 2D points [{x, y}, ...] into an arc-length-parameterized
+     * polyline so we can extract any sub-segment `[startDist, endDist]` cleanly around bends.
+     */
+    function buildArcLengthPolyline(points) {
+      const cumDist = [0];
+      let total = 0;
+      for (let i = 1; i < points.length; i++) {
+        const d = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+        total += d;
+        cumDist.push(total);
+      }
+      return { points, cumDist, totalLength: total };
+    }
+
+    /**
+     * Extracts a sliced sub-polyline between distance `d0` and `d1` along `poly`,
+     * preserving all intermediate 90-degree corners.
+     */
+    function slicePolyline(poly, d0, d1) {
+      const { points, cumDist, totalLength } = poly;
+      const start = Math.max(0, Math.min(totalLength, d0));
+      const end = Math.max(start, Math.min(totalLength, d1));
+      if (end - start < 0.01) return [];
+
+      const out = [];
+
+      const pointAt = (dist) => {
+        if (dist <= 0) return { x: points[0].x, y: points[0].y };
+        if (dist >= totalLength) {
+          const last = points[points.length - 1];
+          return { x: last.x, y: last.y };
+        }
+        for (let i = 1; i < cumDist.length; i++) {
+          if (dist <= cumDist[i]) {
+            const segLen = cumDist[i] - cumDist[i - 1] || 1;
+            const t = (dist - cumDist[i - 1]) / segLen;
+            return {
+              x: points[i - 1].x + (points[i].x - points[i - 1].x) * t,
+              y: points[i - 1].y + (points[i].y - points[i - 1].y) * t
+            };
+          }
+        }
+        return { ...points[points.length - 1] };
+      };
+
+      out.push(pointAt(start));
+      for (let i = 1; i < cumDist.length - 1; i++) {
+        if (cumDist[i] > start + 0.01 && cumDist[i] < end - 0.01) {
+          out.push({ x: points[i].x, y: points[i].y });
+        }
+      }
+      out.push(pointAt(end));
+      return out;
+    }
+
+    /**
+     * Distance from point P to line segment AB (used for accurate touch/click hit testing).
+     */
+    function distToSegment(px, py, ax, ay, bx, by) {
+      const vx = bx - ax;
+      const vy = by - ay;
+      const wx = px - ax;
+      const wy = py - ay;
+      const lenSq = vx * vx + vy * vy;
+      const t = lenSq > 0 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / lenSq)) : 0;
+      const projX = ax + t * vx;
+      const projY = ay + t * vy;
+      return Math.hypot(px - projX, py - projY);
+    }
+
+    // =========================================================================
+    // 5. MAIN ARROW ESCAPE GAME ENGINE
+    // =========================================================================
+    class ArrowEscapeGame {
+      constructor() {
+        this.sound = new SoundEffects();
+
+        // DOM references
+        this.dropletsContainer = document.getElementById('dropletsContainer');
+        this.comboPill = document.getElementById('comboPill');
+        this.comboCountText = document.getElementById('comboCountText');
+        this.topCalloutAnchor = document.getElementById('topCalloutAnchor');
+        this.miniCalloutLayer = document.getElementById('miniCalloutLayer');
+        this.hintBtn = document.getElementById('hintBtn');
+        this.stageContainer = document.getElementById('stageContainer');
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.levelSelect = document.getElementById('levelSelect');
+        this.remainingBadge = document.getElementById('remainingBadge');
+        this.newProceduralBtn = document.getElementById('newProceduralBtn');
+        this.resetBtn = document.getElementById('resetBtn');
+        this.soundBtn = document.getElementById('soundBtn');
+        this.soundIcon = document.getElementById('soundIcon');
+        this.settingsBtn = document.getElementById('settingsBtn');
+
+        // Sound settings modal elements
+        this.settingsModal = document.getElementById('settingsModal');
+        this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        this.saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        this.collisionAudioInput = document.getElementById('collisionAudioInput');
+        this.uploadSoundBtn = document.getElementById('uploadSoundBtn');
+        this.testBonkBtn = document.getElementById('testBonkBtn');
+        this.uploadStatusMsg = document.getElementById('uploadStatusMsg');
+        this.clearCustomSoundBtn = document.getElementById('clearCustomSoundBtn');
+        this.customSoundBadge = document.getElementById('customSoundBadge');
+        this.customSoundName = document.getElementById('customSoundName');
+        this.bonkPresetSelect = document.getElementById('bonkPresetSelect');
+
+        this.statusModal = document.getElementById('statusModal');
+        this.modalBadge = document.getElementById('modalBadge');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.modalMessage = document.getElementById('modalMessage');
+        this.modalStreak = document.getElementById('modalStreak');
+        this.modalDroplets = document.getElementById('modalDroplets');
+        this.modalRetryBtn = document.getElementById('modalRetryBtn');
+        this.modalNextBtn = document.getElementById('modalNextBtn');
+
+        // Game state
+        this.levels = PRESET_LEVELS.map((cfg) => ({ ...cfg }));
+        this.currentLevelIdx = 0;
+        this.rows = 25;
+        this.cols = 17;
+        this.arrows = [];
+        this.escapingArrows = [];
+        this.trailDots = [];
+        this.confetti = [];
+        this.impactEffects = [];
+
+        this.lives = 3;
+        this.maxLives = 3;
+        this.streak = 0;
+        this.bestStreak = 0;
+        this.lastClearTimestamp = 0;
+        this.escapeColorIndex = 0;
+        this.hintArrowId = null;
+        this.hintPulsePhase = 0;
+        this.gameOver = false;
+
+        // Board layout metrics in CSS pixels
+        this.metrics = {
+          width: 360,
+          height: 520,
+          cellSize: 20,
+          offsetX: 10,
+          offsetY: 10
+        };
+
+        this.populateLevelDropdown();
+        this.syncSettingsUi();
+        this.bindEvents();
+        this.resizeCanvas();
+        this.loadLevel(0);
+
+        this.lastFrameTime = performance.now();
+        requestAnimationFrame((t) => this.loop(t));
+      }
+
+      populateLevelDropdown() {
+        this.levelSelect.innerHTML = '';
+        this.levels.forEach((lvl, idx) => {
+          const opt = document.createElement('option');
+          opt.value = String(idx);
+          opt.textContent = lvl.name;
+          this.levelSelect.appendChild(opt);
+        });
+      }
+
+      bindEvents() {
+        window.addEventListener('resize', () => this.resizeCanvas());
+
+        this.levelSelect.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.value, 10);
+          if (!Number.isNaN(idx)) this.loadLevel(idx);
+        });
+
+        this.newProceduralBtn.addEventListener('click', () => {
+          const nextNum = this.levels.length + 1;
+          const randomSeed = Math.floor(100 + Math.random() * 9000);
+          this.levels.push({
+            name: `Level ${nextNum} • Endless Maze`,
+            rows: 24,
+            cols: 17,
+            seed: randomSeed,
+            amberRatio: 0.15,
+            targetFill: 0.85
+          });
+          this.populateLevelDropdown();
+          this.loadLevel(this.levels.length - 1);
+        });
+
+        this.resetBtn.addEventListener('click', () => this.loadLevel(this.currentLevelIdx));
+        this.hintBtn.addEventListener('click', () => this.activateHint());
+
+        this.soundBtn.addEventListener('click', () => {
+          this.sound.enabled = !this.sound.enabled;
+          this.soundIcon.textContent = this.sound.enabled ? '🔊' : '🔇';
+        });
+
+        // Sound Settings modal events
+        this.settingsBtn.addEventListener('click', () => {
+          this.syncSettingsUi();
+          this.settingsModal.classList.remove('hidden');
+        });
+
+        this.closeSettingsBtn.addEventListener('click', () => {
+          this.settingsModal.classList.add('hidden');
+        });
+
+        this.saveSettingsBtn.addEventListener('click', () => {
+          this.settingsModal.classList.add('hidden');
+        });
+
+        this.settingsModal.addEventListener('click', (e) => {
+          if (e.target === this.settingsModal) {
+            this.settingsModal.classList.add('hidden');
+          }
+        });
+
+        this.collisionAudioInput.addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          this.sound.unlock();
+          await this.sound.setCustomBonkFile(file);
+          this.syncSettingsUi();
+          if (this.uploadStatusMsg) {
+            this.uploadStatusMsg.textContent = `✓ "${file.name}" added!`;
+            this.uploadStatusMsg.classList.remove('hidden');
+          }
+          setTimeout(() => this.sound.playBonk(), 80);
+          e.target.value = '';
+        });
+
+        this.testBonkBtn.addEventListener('click', () => {
+          this.sound.unlock();
+          this.sound.playBonk();
+        });
+
+        this.clearCustomSoundBtn.addEventListener('click', () => {
+          this.sound.clearCustomBonkSound();
+          if (this.uploadStatusMsg) {
+            this.uploadStatusMsg.classList.add('hidden');
+          }
+          this.syncSettingsUi();
+          this.sound.playBonk();
+        });
+
+        this.modalRetryBtn.addEventListener('click', () => {
+          this.statusModal.classList.add('hidden');
+          this.loadLevel(this.currentLevelIdx);
+        });
+
+        this.modalNextBtn.addEventListener('click', () => {
+          this.statusModal.classList.add('hidden');
+          if (this.lives <= 0) {
+            this.loadLevel(this.currentLevelIdx);
+          } else if (this.currentLevelIdx + 1 < this.levels.length) {
+            this.loadLevel(this.currentLevelIdx + 1);
+          } else {
+            this.newProceduralBtn.click();
+          }
+        });
+
+        // Unified pointer tap handler for both touch & mouse
+        this.canvas.addEventListener('pointerdown', (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          this.sound.unlock();
+          const rect = this.canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          this.handleBoardTap(x, y);
+        });
+      }
+
+      syncSettingsUi() {
+        this.bonkPresetSelect.value = this.sound.bonkPreset;
+        if (this.sound.customBonkDataUrl) {
+          this.customSoundBadge.textContent = 'Custom';
+          this.customSoundBadge.className =
+            'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#2db5c7] text-white';
+          this.customSoundName.textContent = `🎵 ${this.sound.customBonkName}`;
+          this.clearCustomSoundBtn.classList.remove('hidden');
+        } else {
+          const presetLabels = {
+            softBonk: 'Built-in: Soft Bonk',
+            woodKnock: 'Built-in: Wood Knock',
+            arcadeThud: 'Built-in: Arcade Thud',
+            glassTap: 'Built-in: Crisp Glass Tap'
+          };
+          this.customSoundBadge.textContent = 'Built-in';
+          this.customSoundBadge.className =
+            'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600';
+          this.customSoundName.textContent = presetLabels[this.sound.bonkPreset] || 'Built-in: Soft Bonk';
+          this.clearCustomSoundBtn.classList.add('hidden');
+        }
+      }
+
+      resizeCanvas() {
+        const rect = this.stageContainer.getBoundingClientRect();
+        const width = Math.max(240, rect.width);
+        const height = Math.max(300, rect.height);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        this.canvas.width = Math.floor(width * dpr);
+        this.canvas.height = Math.floor(height * dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Compute centered grid metrics with comfortable outer margin for arrowheads
+        const padX = 14;
+        const padY = 12;
+        const availW = width - padX * 2;
+        const availH = height - padY * 2;
+        const cellSize = Math.min(availW / this.cols, availH / this.rows);
+        const gridW = cellSize * this.cols;
+        const gridH = cellSize * this.rows;
+
+        this.metrics = {
+          width,
+          height,
+          cellSize,
+          offsetX: (width - gridW) / 2,
+          offsetY: (height - gridH) / 2
+        };
+      }
+
+      loadLevel(idx) {
+        this.currentLevelIdx = idx;
+        this.levelSelect.value = String(idx);
+        const cfg = this.levels[idx];
+        const generated = generateSolvableMaze(cfg);
+
+        this.rows = generated.rows;
+        this.cols = generated.cols;
+        this.arrows = generated.arrows.map((a) => ({
+          ...a,
+          bonkProgress: 0,
+          bonkDir: a.dir,
+          flashTimer: 0
+        }));
+
+        this.escapingArrows = [];
+        this.trailDots = [];
+        this.confetti = [];
+        this.impactEffects = [];
+        this.lives = this.maxLives;
+        this.streak = 0;
+        this.bestStreak = 0;
+        this.hintArrowId = null;
+        this.gameOver = false;
+
+        this.statusModal.classList.add('hidden');
+        this.resizeCanvas();
+        this.renderDropletsHud();
+        this.updateComboHud();
+        this.updateRemainingBadge();
+      }
+
+      // =======================================================================
+      // HUD RENDERING (TEAL WATER-DROPLET LIVES, STREAK PILL, CALLOUTS)
+      // =======================================================================
+      renderDropletsHud() {
+        this.dropletsContainer.innerHTML = '';
+        for (let i = 0; i < this.maxLives; i++) {
+          const alive = i < this.lives;
+          const wrapper = document.createElement('div');
+          wrapper.className = `w-7 h-8 flex items-center justify-center transition-all duration-300 ${
+            alive ? '' : 'droplet-lost'
+          }`;
+          wrapper.innerHTML = `
+            <svg viewBox="0 0 32 38" class="w-full h-full drop-shadow-[0_3px_5px_rgba(25,115,130,0.22)]">
+              <path
+                d="M16 2.5C16 2.5 4.5 16.4 4.5 24.5C4.5 30.85 9.65 36 16 36C22.35 36 27.5 30.85 27.5 24.5C27.5 16.4 16 2.5 16 2.5Z"
+                fill="${alive ? '#2db5c7' : '#9bb3b6'}"
+              />
+              <path
+                d="M11.2 21.5C10.5 24.2 11.4 27.4 13.8 29.1"
+                stroke="rgba(255,255,255,0.65)"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                fill="none"
+              />
+            </svg>
+          `;
+          this.dropletsContainer.appendChild(wrapper);
+        }
+      }
+
+      updateComboHud() {
+        this.comboCountText.textContent = String(this.streak);
+        if (this.streak >= 1) {
+          this.comboPill.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+          this.comboPill.classList.add('opacity-100', 'scale-100');
+        } else {
+          this.comboPill.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+          this.comboPill.classList.remove('opacity-100', 'scale-100');
+        }
+      }
+
+      updateRemainingBadge() {
+        const count = this.arrows.length;
+        this.remainingBadge.textContent = `${count} left`;
+      }
+
+      spawnTopBannerCallout(streak) {
+        const item = TOP_CALLOUTS[(streak - 1) % TOP_CALLOUTS.length];
+        this.topCalloutAnchor.innerHTML = '';
+
+        const banner = document.createElement('div');
+        banner.className =
+          'animate-top-banner absolute left-1/2 top-1 banner-callout-text text-2xl sm:text-3xl whitespace-nowrap';
+        banner.style.backgroundImage = item.gradient;
+        banner.style.webkitBackgroundClip = 'text';
+        banner.style.backgroundClip = 'text';
+        banner.style.color = 'transparent';
+        banner.textContent = item.text;
+
+        this.topCalloutAnchor.appendChild(banner);
+        setTimeout(() => banner.remove(), 1150);
+      }
+
+      spawnEagleEyeCallout(xPx, yPx) {
+        const el = document.createElement('div');
+        el.className =
+          'animate-eagle absolute eagle-callout-text text-lg sm:text-xl whitespace-nowrap';
+        const clampedX = Math.max(68, Math.min(this.metrics.width - 68, xPx));
+        const clampedY = Math.max(40, Math.min(this.metrics.height - 40, yPx));
+        el.style.left = `${clampedX}px`;
+        el.style.top = `${clampedY}px`;
+        el.textContent = 'Eagle Eye!';
+
+        this.miniCalloutLayer.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+      }
+
+      // =======================================================================
+      // SOLVABILITY & COLLISION DETECTION
+      // =======================================================================
+      /**
+       * Checks the straight ray from `arrow`'s arrowhead to the outer edge of the board.
+       * Returns `{ clear: true }` if unobstructed, or `{ clear: false, hitRow, hitCol, blocker }`.
+       */
+      checkExitRay(arrow) {
+        const occ = new Map();
+        for (const other of this.arrows) {
+          if (other.id === arrow.id) continue;
+          for (const [r, c] of other.path) {
+            occ.set(`${r},${c}`, other);
+          }
+        }
+
+        const [headR, headC] = arrow.path[arrow.path.length - 1];
+        const { dr, dc } = DIRS[arrow.dir];
+        let r = headR + dr;
+        let c = headC + dc;
+
+        while (r >= 0 && r < this.rows && c >= 0 && c < this.cols) {
+          const hit = occ.get(`${r},${c}`);
+          if (hit) {
+            return { clear: false, hitRow: r, hitCol: c, blocker: hit };
+          }
+          r += dr;
+          c += dc;
+        }
+        return { clear: true };
+      }
+
+      activateHint() {
+        if (this.gameOver || this.arrows.length === 0) return;
+        this.sound.unlock();
+        for (const arrow of this.arrows) {
+          if (this.checkExitRay(arrow).clear) {
+            this.hintArrowId = arrow.id;
+            this.hintPulsePhase = 0;
+            return;
+          }
+        }
+      }
+
+      cellCenter(r, c) {
+        return {
+          x: this.metrics.offsetX + (c + 0.5) * this.metrics.cellSize,
+          y: this.metrics.offsetY + (r + 0.5) * this.metrics.cellSize
+        };
+      }
+
+      // =======================================================================
+      // INPUT HIT TESTING & INTERACTION
+      // =======================================================================
+      handleBoardTap(tapX, tapY) {
+        if (this.gameOver || this.arrows.length === 0) return;
+
+        // Find closest arrow within generous finger tap radius
+        const maxTapDist = Math.max(15, this.metrics.cellSize * 0.72);
+        let bestArrow = null;
+        let bestDist = maxTapDist;
+
+        for (const arrow of this.arrows) {
+          const pts = arrow.path.map(([r, c]) => this.cellCenter(r, c));
+          for (let i = 0; i < pts.length; i++) {
+            const dPt = Math.hypot(tapX - pts[i].x, tapY - pts[i].y);
+            if (dPt < bestDist) {
+              bestDist = dPt;
+              bestArrow = arrow;
+            }
+            if (i > 0) {
+              const dSeg = distToSegment(tapX, tapY, pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
+              if (dSeg < bestDist) {
+                bestDist = dSeg;
+                bestArrow = arrow;
+              }
+            }
+          }
+        }
+
+        if (!bestArrow) return;
+
+        const rayCheck = this.checkExitRay(bestArrow);
+        if (rayCheck.clear) {
+          this.launchEscapingArrow(bestArrow);
+        } else {
+          this.triggerBlockedBonk(bestArrow, rayCheck.hitRow, rayCheck.hitCol);
+        }
+      }
+
+      /**
+       * Launches a clear arrow into a true path-following snake slither off the screen!
+       */
+      launchEscapingArrow(arrow) {
+        if (this.hintArrowId === arrow.id) this.hintArrowId = null;
+
+        // Remove from static board arrows immediately so subsequent taps can chain rapidly!
+        this.arrows = this.arrows.filter((a) => a.id !== arrow.id);
+        this.updateRemainingBadge();
+
+        // Update combo streak & callouts
+        const now = performance.now();
+        const isFastChain = now - this.lastClearTimestamp < 2400;
+        this.lastClearTimestamp = now;
+        this.streak += 1;
+        this.bestStreak = Math.max(this.bestStreak, this.streak);
+        this.updateComboHud();
+
+        this.sound.playSlitherEscape(this.streak);
+
+        // Pick vibrant escape color cycling through video's exact palette
+        const escapeColor = COLORS.escapePalette[this.escapeColorIndex % COLORS.escapePalette.length];
+        this.escapeColorIndex += 1;
+
+        const headCell = arrow.path[arrow.path.length - 1];
+        const headPx = this.cellCenter(headCell[0], headCell[1]);
+
+        if (this.streak >= 2) {
+          this.spawnTopBannerCallout(this.streak);
+        }
+        if ((this.streak >= 3 && isFastChain) || arrow.path.length >= 13) {
+          this.spawnEagleEyeCallout(headPx.x, headPx.y - 12);
+        }
+
+        // Spawn festive confetti burst around the board
+        this.spawnConfettiBurst(headPx.x, headPx.y, escapeColor, 26);
+
+        // Build extended polyline: arrow's own winding body + straight runway off-screen
+        const bodyPts = arrow.path.map(([r, c]) => this.cellCenter(r, c));
+        const { dr, dc } = DIRS[arrow.dir];
+        const offscreenRunway = Math.max(this.metrics.width, this.metrics.height) + 180;
+        const lastPt = bodyPts[bodyPts.length - 1];
+        const extendedPts = [
+          ...bodyPts,
+          {
+            x: lastPt.x + dc * offscreenRunway,
+            y: lastPt.y + dr * offscreenRunway
+          }
+        ];
+
+        const poly = buildArcLengthPolyline(extendedPts);
+        const bodyArcLength = buildArcLengthPolyline(bodyPts).totalLength;
+
+        // Precompute grid cell centers along the arrow's path so vacated dots glow & fade
+        const cellCenters = arrow.path.map(([r, c], idx) => ({
+          x: bodyPts[idx].x,
+          y: bodyPts[idx].y,
+          distAlongBody: idx * this.metrics.cellSize,
+          spawned: false
+        }));
+
+        this.escapingArrows.push({
+          poly,
+          bodyLength: bodyArcLength,
+          headDist: bodyArcLength,
+          speed: Math.max(880, this.metrics.cellSize * 46), // Smooth rapid slither speed
+          color: escapeColor,
+          dir: arrow.dir,
+          cellCenters
+        });
+
+        // Check victory once all arrows are cleared
+        if (this.arrows.length === 0) {
+          this.sound.playVictory();
+          this.spawnConfettiBurst(this.metrics.width * 0.5, this.metrics.height * 0.35, escapeColor, 65);
+          setTimeout(() => {
+            if (this.arrows.length === 0 && !this.gameOver) {
+              this.gameOver = true;
+              this.showEndModal(true);
+            }
+          }, 560);
+        }
+      }
+
+      /**
+       * Handles tapping a blocked arrow: flashes coral-red, bonks toward obstacle,
+       * shows red impact dot at collision cell, and deducts 1 teal droplet life.
+       */
+      triggerBlockedBonk(arrow, hitRow, hitCol) {
+        this.sound.playBonk();
+        this.streak = 0;
+        this.updateComboHud();
+
+        arrow.bonkProgress = 1;
+        arrow.flashTimer = 0.45;
+
+        const impactPx = this.cellCenter(hitRow, hitCol);
+        this.impactEffects.push({
+          x: impactPx.x,
+          y: impactPx.y,
+          timer: 0.48,
+          maxTimer: 0.48
+        });
+
+        this.lives = Math.max(0, this.lives - 1);
+        this.renderDropletsHud();
+
+        if (this.lives <= 0) {
+          this.gameOver = true;
+          setTimeout(() => {
+            this.showEndModal(false);
+          }, 420);
+        }
+      }
+
+      showEndModal(isVictory) {
+        this.modalBadge.textContent = isVictory ? '🏆' : '💧';
+        this.modalTitle.textContent = isVictory ? 'Maze Cleared!' : 'Out of Droplets!';
+        this.modalMessage.textContent = isVictory
+          ? 'Every interlocking arrow slithered free!'
+          : 'Watch out for blocked paths! Try again and clear the outer arrows first.';
+        this.modalStreak.textContent = String(this.bestStreak);
+        this.modalDroplets.textContent = `${this.lives} / ${this.maxLives}`;
+        this.modalNextBtn.textContent = isVictory ? 'Next Maze' : 'Try Again';
+        this.statusModal.classList.remove('hidden');
+      }
+
+      // =======================================================================
+      // PARTICLE & CONFETTI SYSTEM
+      // =======================================================================
+      spawnConfettiBurst(originX, originY, primaryColor, count = 28) {
+        const palette = [primaryColor, '#239bf2', '#e84c5c', '#7bc142', '#9b51e0', '#f59e23'];
+        for (let i = 0; i < count; i++) {
+          const spreadX = this.metrics.width * (0.1 + Math.random() * 0.8);
+          const spreadY = this.metrics.height * (0.08 + Math.random() * 0.75);
+          const useOrigin = i < count * 0.35;
+          const x = useOrigin ? originX + (Math.random() - 0.5) * 40 : spreadX;
+          const y = useOrigin ? originY + (Math.random() - 0.5) * 40 : spreadY;
+
+          this.confetti.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 190,
+            vy: -70 - Math.random() * 140,
+            gravity: 340,
+            size: 5 + Math.random() * 5,
+            rot: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 9,
+            shape: Math.random() < 0.5 ? 'rect' : 'tri',
+            color: palette[i % palette.length],
+            alpha: 1,
+            decay: 0.9 + Math.random() * 0.55
+          });
+        }
+      }
+
+      // =======================================================================
+      // ANIMATION & CANVAS RENDERING LOOP
+      // =======================================================================
+      loop(now) {
+        const dt = Math.min(0.05, (now - this.lastFrameTime) / 1000);
+        this.lastFrameTime = now;
+
+        this.update(dt);
+        this.render();
+
+        requestAnimationFrame((t) => this.loop(t));
+      }
+
+      update(dt) {
+        this.hintPulsePhase += dt * 5.5;
+
+        // Update blocked arrow bonk & red flash timers
+        for (const arrow of this.arrows) {
+          if (arrow.bonkProgress > 0) {
+            arrow.bonkProgress = Math.max(0, arrow.bonkProgress - dt * 3.4);
+          }
+          if (arrow.flashTimer > 0) {
+            arrow.flashTimer = Math.max(0, arrow.flashTimer - dt);
+          }
+        }
+
+        // Update escaping arrows slithering along their own paths
+        for (let i = this.escapingArrows.length - 1; i >= 0; i--) {
+          const esc = this.escapingArrows[i];
+          esc.headDist += esc.speed * dt;
+          const tailDist = esc.headDist - esc.bodyLength;
+
+          // Spawn fading colored trail dots as the tail passes each grid cell
+          for (const cell of esc.cellCenters) {
+            if (!cell.spawned && tailDist >= cell.distAlongBody) {
+              cell.spawned = true;
+              this.trailDots.push({
+                x: cell.x,
+                y: cell.y,
+                color: esc.color,
+                alpha: 0.9,
+                decay: 1.45
+              });
+            }
+          }
+
+          if (tailDist >= esc.poly.totalLength) {
+            this.escapingArrows.splice(i, 1);
+          }
+        }
+
+        // Fade trail dots
+        for (let i = this.trailDots.length - 1; i >= 0; i--) {
+          const dot = this.trailDots[i];
+          dot.alpha -= dot.decay * dt;
+          if (dot.alpha <= 0) {
+            this.trailDots.splice(i, 1);
+          }
+        }
+
+        // Update red collision impact dots
+        for (let i = this.impactEffects.length - 1; i >= 0; i--) {
+          const imp = this.impactEffects[i];
+          imp.timer -= dt;
+          if (imp.timer <= 0) {
+            this.impactEffects.splice(i, 1);
+          }
+        }
+
+        // Update confetti particles
+        for (let i = this.confetti.length - 1; i >= 0; i--) {
+          const p = this.confetti[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += p.gravity * dt;
+          p.vx *= 0.985;
+          p.rot += p.vRot * dt;
+          p.alpha -= p.decay * dt;
+          if (p.alpha <= 0) {
+            this.confetti.splice(i, 1);
+          }
+        }
+      }
+
+      render() {
+        const ctx = this.ctx;
+        const { width, height, cellSize, offsetX, offsetY } = this.metrics;
+        ctx.clearRect(0, 0, width, height);
+
+        // 1. Draw soft-mint/grey grid dots (#b9cfc3) across the entire playfield
+        const dotRadius = Math.max(1.6, cellSize * 0.105);
+        ctx.fillStyle = COLORS.gridDot;
+        for (let r = 0; r < this.rows; r++) {
+          const cy = offsetY + (r + 0.5) * cellSize;
+          for (let c = 0; c < this.cols; c++) {
+            const cx = offsetX + (c + 0.5) * cellSize;
+            ctx.beginPath();
+            ctx.arc(cx, cy, dotRadius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // 2. Draw fading colored trail dots vacated by escaping arrows
+        for (const dot of this.trailDots) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, dot.alpha);
+          ctx.fillStyle = dot.color;
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, dotRadius * 1.45, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Stroke & arrowhead dimensions tuned cleanly to grid cell spacing
+        const strokeWidth = Math.max(2.6, cellSize * 0.175);
+        const headLength = Math.max(7, cellSize * 0.44);
+        const headHalfWidth = Math.max(4.5, cellSize * 0.28);
+
+        // 3. Draw static interlocking arrows on the board
+        for (const arrow of this.arrows) {
+          const pts = arrow.path.map(([r, c]) => this.cellCenter(r, c));
+          const isFlashingRed = arrow.flashTimer > 0;
+          const isHinted = arrow.id === this.hintArrowId;
+
+          // Subtle directional bonk offset when blocked
+          let shiftX = 0;
+          let shiftY = 0;
+          if (arrow.bonkProgress > 0) {
+            const bump = Math.sin(arrow.bonkProgress * Math.PI) * (cellSize * 0.28);
+            shiftX = DIRS[arrow.dir].dc * bump;
+            shiftY = DIRS[arrow.dir].dr * bump;
+          }
+
+          const color = isFlashingRed ? COLORS.errorRed : arrow.baseColor;
+
+          ctx.save();
+          ctx.translate(shiftX, shiftY);
+
+          if (isHinted) {
+            const glowAlpha = 0.45 + 0.4 * Math.sin(this.hintPulsePhase);
+            ctx.shadowColor = `rgba(35, 155, 242, ${glowAlpha})`;
+            ctx.shadowBlur = 14;
+          }
+
+          this.drawArrowPolyline(ctx, pts, arrow.dir, color, strokeWidth, headLength, headHalfWidth);
+          ctx.restore();
+        }
+
+        // 4. Draw escaping arrows slithering smoothly along their own path bends off-screen
+        for (const esc of this.escapingArrows) {
+          const tailDist = Math.max(0, esc.headDist - esc.bodyLength);
+          const slicedPts = slicePolyline(esc.poly, tailDist, esc.headDist);
+          if (slicedPts.length >= 2) {
+            ctx.save();
+            this.drawArrowPolyline(
+              ctx,
+              slicedPts,
+              esc.dir,
+              esc.color,
+              strokeWidth * 1.08,
+              headLength * 1.05,
+              headHalfWidth * 1.05
+            );
+            ctx.restore();
+          }
+        }
+
+        // 5. Draw red collision impact dot when a blocked arrow bonks into an obstacle
+        for (const imp of this.impactEffects) {
+          const t = imp.timer / imp.maxTimer;
+          ctx.save();
+          ctx.globalAlpha = Math.min(1, t * 1.3);
+          ctx.fillStyle = COLORS.errorRed;
+          ctx.beginPath();
+          ctx.arc(imp.x, imp.y, Math.max(4.5, cellSize * 0.26) * (0.85 + 0.3 * (1 - t)), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 6. Draw celebratory confetti rectangles & triangles
+        for (const p of this.confetti) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          if (p.shape === 'rect') {
+            ctx.fillRect(-p.size * 0.6, -p.size * 0.35, p.size * 1.2, p.size * 0.7);
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(0, -p.size * 0.65);
+            ctx.lineTo(p.size * 0.6, p.size * 0.55);
+            ctx.lineTo(-p.size * 0.6, p.size * 0.55);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+
+      /**
+       * Renders a clean 90-degree orthogonal arrow path with rounded caps/joins
+       * and a crisp triangular arrowhead at the tip.
+       */
+      drawArrowPolyline(ctx, pts, dirKey, color, strokeWidth, headLen, headHalfW) {
+        if (pts.length === 0) return;
+
+        const tip = pts[pts.length - 1];
+        const angle = DIRS[dirKey].angle;
+
+        // Draw body line stopping slightly inside the arrowhead base for a razor-sharp tip
+        if (pts.length >= 2) {
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length - 1; i++) {
+            ctx.lineTo(pts[i].x, pts[i].y);
+          }
+          const baseInset = headLen * 0.45;
+          ctx.lineTo(
+            tip.x - Math.cos(angle) * baseInset,
+            tip.y - Math.sin(angle) * baseInset
+          );
+          ctx.strokeStyle = color;
+          ctx.lineWidth = strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+        }
+
+        // Draw crisp triangular arrowhead centered at the tip cell
+        ctx.save();
+        ctx.translate(tip.x, tip.y);
+        ctx.rotate(angle);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(headLen * 0.55, 0);
+        ctx.lineTo(-headLen * 0.45, -headHalfW);
+        ctx.lineTo(-headLen * 0.28, 0);
+        ctx.lineTo(-headLen * 0.45, headHalfW);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      new ArrowEscapeGame();
+    });
+  </script>
+</body>
+</html>
+```
